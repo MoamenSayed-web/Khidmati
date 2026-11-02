@@ -1,0 +1,10 @@
+{
+  "description": "A digital neighborhood platform for citizens to submit complaints, track reports, and access local services, fostering community engagement and support.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
