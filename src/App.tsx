@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { defaultCitizen, initialComplaint } from "./data/mockData"
-import { routeFromLocation, routePaths } from "./app/routing/routes"
+import { useAppNavigation } from "./app/routing/useAppNavigation"
+import { useAppearancePreferences } from "./hooks/useAppearancePreferences"
 import { translateInterface } from "./utils/translation"
 import { Footer, Header, WorkspaceHeader } from "./components/shared"
 import { Icon, ProtectedState, SweetAlert } from "./components/ui"
@@ -35,15 +36,13 @@ import type {
   ComplaintRecord,
   ComplaintStatus,
   CurrentUser,
-  Language,
   Role,
   Route,
-  Theme,
   WorkspaceNotification,
 } from "./types"
 
 export default function App() {
-  const [route, setRoute] = useState<Route>(routeFromLocation)
+  const { route, navigate } = useAppNavigation()
   const [toastText, setToastText] = useState("")
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const [selectedCategory, setSelectedCategory] = useState("")
@@ -80,33 +79,8 @@ export default function App() {
   const [citizenAccount, setCitizenAccount] =
     useState<CitizenAccount>(defaultCitizen)
   const [alert, setAlert] = useState<AlertState | null>(null)
-  const [theme, setTheme] = useState<Theme>(() => {
-    return localStorage.getItem("khadmaty-theme") === "dark" ? "dark" : "light"
-  })
-  const [language, setLanguage] = useState<Language>(() => {
-    return localStorage.getItem("khadmaty-language") === "en" ? "en" : "ar"
-  })
-
-  useEffect(() => {
-    const onNavigation = () => setRoute(routeFromLocation())
-    window.addEventListener("popstate", onNavigation)
-    window.addEventListener("hashchange", onNavigation)
-    return () => {
-      window.removeEventListener("popstate", onNavigation)
-      window.removeEventListener("hashchange", onNavigation)
-    }
-  }, [])
-
-  useEffect(() => {
-    localStorage.setItem("khadmaty-theme", theme)
-    document.documentElement.dataset.theme = theme
-  }, [theme])
-
-  useEffect(() => {
-    localStorage.setItem("khadmaty-language", language)
-    document.documentElement.lang = language
-    document.documentElement.dir = language === "ar" ? "rtl" : "ltr"
-  }, [language])
+  const { theme, setTheme, language, setLanguage } =
+    useAppearancePreferences()
 
   useEffect(() => {
     const root = document.getElementById("app-root")
@@ -122,29 +96,6 @@ export default function App() {
     })
     return () => observer.disconnect()
   }, [language, route, alert, isLoggedIn, currentUser, role])
-
-  const navigate = (target: Route) => {
-    if (target === route) {
-      window.scrollTo({ top: 0, behavior: "smooth" })
-      return
-    }
-    const updateRoute = () => {
-      window.history.pushState({}, "", routePaths[target])
-      setRoute(target)
-      window.scrollTo({ top: 0, behavior: "auto" })
-    }
-    const transitionDocument = document as Document & {
-      startViewTransition?: (update: () => void) => void
-    }
-    const reduceMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches
-    if (transitionDocument.startViewTransition && !reduceMotion) {
-      transitionDocument.startViewTransition(updateRoute)
-    } else {
-      updateRoute()
-    }
-  }
 
   const showLoginRequired = (
     message = "يجب تسجيل الدخول أولاً حتى تتمكن من تقديم بلاغ.",

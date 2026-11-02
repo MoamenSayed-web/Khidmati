@@ -1,6 +1,6 @@
 # Frontend Migration Checklist
 
-Phase 1 extractions are marked complete below. Aggregate build and browser smoke checks were run after extraction; the results and remaining validation gaps are recorded in the final section. Per-extraction checkpoints were not run immediately after each step.
+Phase 1 extractions are marked complete below. Aggregate build and browser smoke checks were run after extraction; the results and remaining validation gaps are recorded in the final section. Per-extraction checkpoints were not run immediately after each step. The T01 foundation audit is recorded at the end; its formal acceptance status is blocked because no authoritative T01 criteria were present in the repository.
 
 ## Before the first extraction
 
@@ -69,11 +69,26 @@ Phase 1 extractions are marked complete below. Aggregate build and browser smoke
    - [ ] **Regression checkpoint:** smoke-test the full route set and public/citizen/employee/admin transitions, including complaint details opened from notifications (not run).
    - [ ] Commit route groups separately after validation.
 
-8. **Optional state extraction — decision required**
-   - [x] Review the state boundaries in `App`; a provider is not needed for this extraction phase, so `src/app/providers/` remains empty.
-   - [ ] If approved, document the provider contract first and migrate one state domain at a time; do not change state semantics or introduce new service abstractions.
-   - [ ] **Build validation after each state domain:** run the existing production build.
-   - [ ] **Regression checkpoint:** authentication/access, complaint updates, notifications, favorites, alert/toast callbacks, theme/language persistence, and browser navigation.
+8. **Phase 2 state and orchestration**
+   - [x] Inventory all 16 `App` state values, derived values, effects, and shared callbacks.
+   - [x] Identify state that stays local to extracted page/layout/component owners.
+   - [x] Document the proposed ownership boundaries and dependency direction in the Phase 2 plan.
+   - [x] Recommend a bounded first extraction: route state, browser listeners, and low-level `navigate` into `src/app/routing/useAppNavigation.ts`; keep auth-aware `go` and route composition in `App`.
+   - [x] Document navigation, auth, complaint/notification, preference/translation, timer, and Strict Mode risks and their regression gates.
+   - [x] Review gate: the Phase 2 boundaries and navigation extraction were approved before implementation.
+   - [x] Move only route state, browser history/hash listeners and cleanup, and low-level `navigate` to `src/app/routing/useAppNavigation.ts`; return `{ route, navigate }`.
+   - [x] Update `App.tsx` to consume the hook; leave `go`, access policy, page rendering, auth, complaint workflow, and other state in `App`.
+   - [x] Build validation: `pnpm run build` passed on 2026-11-02.
+   - [ ] TypeScript validation: `pnpm exec tsc --noEmit` remains blocked by pre-existing baseline syntax errors in `Icon.tsx` and `LoginPage.tsx`; no pass is claimed.
+   - [x] Browser navigation checks: initial route, internal navigation, Back/Forward, direct-route refresh, legacy hash route, and unauthenticated access guard.
+   - [x] Verify no duplicate history listeners: one `popstate`/`hashchange` subscription pair and matching cleanup in the hook; none remain in `App`.
+   - [x] Move only theme/language state initialization, persistence, and document attributes into `src/hooks/useAppearancePreferences.ts`; return `{ theme, setTheme, language, setLanguage }`.
+   - [x] Keep the translation observer/synchronization effect in `App.tsx` with its existing dependencies.
+   - [x] Build validation: `pnpm run build` passed on 2026-11-02.
+   - [ ] TypeScript validation: `pnpm exec tsc --noEmit` remains blocked by pre-existing baseline syntax errors in `Icon.tsx` and `LoginPage.tsx`; no pass is claimed.
+   - [x] Browser checks: default light/Arabic state, theme switching and persistence after refresh, English/LTR and Arabic/RTL switching and persistence after refresh, and translation on route changes.
+   - [x] Verify single preference side-effect owner: localStorage and document theme/language/direction writes occur only in `useAppearancePreferences`; translation DOM observation remains in `App`.
+   - [ ] Implement auth session or complaint workflow only in separate reviewed follow-up steps; this extraction does not approve those changes.
    - [ ] Commit each validated state-domain migration separately.
 
 ## Validation and regression gates
@@ -99,6 +114,34 @@ Phase 1 extractions are marked complete below. Aggregate build and browser smoke
 - Refactoring fixes: added the missing `HomePage` and `AccountLayout` imports, imported `ComplaintSwitcher` into the tracking module, and added missing `useState` imports in `Header`, `ReportsPage`, and the citizen dashboard module.
 - Limitations: no exhaustive manual pass over every route, workflow, mobile-navigation state, or persisted settings was performed; no visual comparison against a design baseline was available.
 
+## Phase 2 analysis checklist
+
+- [x] Read the complete current `src/App.tsx`, current refactoring plan/checklist, and `src/main.tsx` Strict Mode entry.
+- [x] Inspect extracted types, route helpers, layouts, shared/UI components, page modules, feature modules, and their import/export/state ownership boundaries.
+- [x] Inventory navigation/auth/session, complaint/notification, favorites/category, feedback, and appearance/translation ownership.
+- [x] Separate app-wide state from page-local state; do not propose lifting local form/menu/filter state.
+- [x] Record callback dependencies and a dependency-safe extraction sequence.
+- [x] Record regression requirements and the known pre-existing TypeScript baseline failures.
+- [x] Confirm the starting worktree was clean and the modularization was committed (`966a560`) before documentation edits.
+- [x] Make documentation-only changes for the initial Phase 2 analysis; do not install dependencies or commit/push.
+- [x] Navigation hook extraction implemented after explicit review approval; no other Phase 2 state extraction was started.
+- [x] Preserve the other pre-existing documentation/worktree changes; no commit or push.
+- [ ] Review and approve each additional Phase 2 state extraction separately.
+
+### Navigation hook validation — 2026-11-02
+
+- Production build: passed.
+- TypeScript: not passed; the check still reports pre-existing syntax errors in `src/components/ui/Icon.tsx:116` and `src/features/auth/LoginPage.tsx:43`.
+- Browser: initial `/`, internal `/services`, Back, Forward, refresh on `/services`, legacy `/#/login`, and unauthenticated `/admin/dashboard` guard were verified. A rapid Back/Forward exercise during an active View Transition once emitted `Transition was aborted because of invalid state`; the normal-motion retry passed when transitions settled, and the reduced-motion run passed without page errors. Existing View Transition semantics were preserved.
+- Listener review: `useAppNavigation` contains the sole `popstate`/`hashchange` registration and matching cleanup; no duplicate listener was found.
+
+### Appearance preferences hook validation — 2026-11-02
+
+- Production build: passed.
+- TypeScript: not passed; the check reports the same pre-existing syntax errors in `src/components/ui/Icon.tsx:116` and `src/features/auth/LoginPage.tsx:43`.
+- Browser: default state was light/Arabic/RTL; theme switching set `data-theme` and persisted after refresh; language switching updated rendered translations, `lang`, and `dir` to English/LTR and persisted after refresh; switching back restored Arabic/RTL. Route changes retained English translation through the `MutationObserver`. No page errors occurred in the reduced-motion route-observer check.
+- Side effects: static inspection confirms only the new hook reads/writes appearance storage and document attributes; `App` still owns one translation observer.
+
 ## Git commit recommendations
 
 - Create a clean baseline commit before starting application-code extraction.
@@ -107,4 +150,21 @@ Phase 1 extractions are marked complete below. Aggregate build and browser smoke
 - Run the build and the relevant regression checkpoint before committing each step.
 - Do not combine refactoring with formatting churn, dependency updates, CSS redesign, or behavior changes.
 - Keep uncompleted checklist items open; record failures and their scope rather than fixing unrelated baseline issues.
-- No commit was created for this phase.
+- No commit or push is part of the Phase 2 analysis task.
+
+## T01 — Project Foundation audit (2026-11-02)
+
+**Formal T01 acceptance: BLOCKED.** The repository contains no T01 specification or authoritative acceptance-criteria list. The following requested audit checks were completed; they should not be treated as a substitute for the missing criteria.
+
+- [x] Confirm the expected `src/` folder structure, including `app/providers`, `app/routing`, `components/ui`, `components/shared`, all five feature folders, and the root-level data/hooks/layouts/pages/services/types/utils folders. `services` and `app/providers` contain no runtime modules; no speculative implementation was added.
+- [x] Audit route definitions and composition: all 42 `Route` members map to exactly one path; 41 explicit switch cases leave `home` to the default fallback; no route is missing from composition.
+- [x] Audit static imports/exports across 45 TypeScript files and 98 local import edges: all local paths resolve and no cycle was found.
+- [x] Exercise all 42 mapped paths under citizen, employee, and admin sessions. Permitted routes rendered and cross-role routes showed the existing access-denied state; no page errors occurred.
+- [x] Verify direct-load behavior for a report detail route, protected employee/admin routes, unknown-path fallback to home, trailing slash normalization, and legacy `/#/login`.
+- [x] `pnpm run build` passed.
+- [ ] `pnpm exec tsc --noEmit` — **BLOCKED by pre-existing baseline errors** in `src/components/ui/Icon.tsx:116` and `src/features/auth/LoginPage.tsx:43`. No unrelated baseline fix was made.
+- [x] `git diff --check` passed.
+- [x] Confirm no changes to `package.json`, `pnpm-lock.yaml`, `src/main.tsx`, or `src/index.css`; no dependency installation, commit, or push was performed for this audit.
+- [ ] Obtain and review the authoritative T01 acceptance criteria before declaring T01 accepted.
+
+Route coverage above validates route selection and role gating only. It does not claim exhaustive page-interaction, responsive, or visual-regression coverage.
