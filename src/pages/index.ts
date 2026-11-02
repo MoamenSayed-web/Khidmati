@@ -1,0 +1,5 @@
+export { HomePage } from "./HomePage"
+export { ReportsPage } from "./ReportsPage"
+export { OfficesPage, OfficeDetailsPage } from "./OfficePages"
+export { AssistantPage, AboutPage, FAQPage, SearchPage, EmergencyPage } from "./InfoPages"
+export { ProfilePage, NotificationsPage } from "./AccountPages"
