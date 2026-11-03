@@ -40,7 +40,7 @@ export function LoginPage({
       return
     }
     const identity = email.trim().toLowerCase()
-    let loginResult: { role: Role user: CurrentUser } | null = null
+    let loginResult: { role: Role; user: CurrentUser } | null = null
     if (identity === "employee@khadmaty.com" && password === "Employee@123") {
       loginResult = { role: "employee", user: employeeUser }
     } else if (identity === "admin@khadmaty.com" && password === "Admin@123") {

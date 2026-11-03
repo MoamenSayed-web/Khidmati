@@ -7,7 +7,6 @@ export const englishText: Record<string, string> = {
   "مساعد الحي الذكي": "Smart Assistant",
   "عن المنصة": "About",
   "تسجيل الدخول": "Sign in",
-  "لوحة التحكم": "Dashboard",
   بلاغاتي: "My reports",
   "الملف الشخصي": "Profile",
   الإشعارات: "Notifications",
@@ -23,7 +22,6 @@ export const englishText: Record<string, string> = {
   "خريطة البلاغات": "Reports map",
   "البلاغات الجديدة": "New complaints",
   "قيد التنفيذ": "In progress",
-  "البلاغات المحلولة": "Resolved complaints",
   "إدارة المواطنين": "Citizen management",
   "إدارة الموظفين": "Employee management",
   "الإدارات والمكاتب": "Departments and service centers",
@@ -85,7 +83,6 @@ export const englishText: Record<string, string> = {
   "اعرف حالة معاينة ونزول فريق الحي": "Check inspection and field-team status",
   "بلغ عن مشكلة بالشارع وتابع حلها":
     "Report a street issue and track its resolution",
-  "ابدأ الآن": "Start now",
   "أقسام وبلاغات الحي الميدانية": "Neighborhood report categories",
   "اختر القسم التابع لمشكلتك لتوجيه البلاغ للإدارة المختصة برئاسة الحي فوراً":
     "Choose the relevant category to route your report to the responsible department.",

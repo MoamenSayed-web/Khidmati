@@ -1,8 +1,38 @@
 import { useState } from "react"
-import { AccountLayout } from "../layouts"
+import type { ReactNode } from "react"
+import { AccountLayout, CitizenLayout } from "../layouts"
 import { SectionTitle } from "../components/shared"
 import { Button, Card, Icon, Input, Modal, Select, StatusBadge } from "../components/ui"
 import type { AlertState, CurrentUser, Role, Route, WorkspaceNotification } from "../types"
+
+function AccountPageLayout({
+  route,
+  go,
+  children,
+  currentUser,
+  onLogout,
+  role,
+}: {
+  route: Route
+  go: (route: Route) => void
+  children: ReactNode
+  currentUser: CurrentUser
+  onLogout: () => void
+  role: Role
+}) {
+  if (role === "citizen")
+    return (
+      <CitizenLayout route={route} go={go} currentUser={currentUser} onLogout={onLogout}>
+        {children}
+      </CitizenLayout>
+    )
+  return (
+    <AccountLayout route={route} go={go} currentUser={currentUser} onLogout={onLogout} role={role}>
+      {children}
+    </AccountLayout>
+  )
+}
+
 
 export function ProfilePage({
   go,
@@ -35,7 +65,7 @@ export function ProfilePage({
   const profilePhoneInvalid = !profile.phone || !/^01\d{9}$/.test(profile.phone)
   return (
     <>
-      <AccountLayout
+      <AccountPageLayout
         route={activeRoute}
         go={go}
         currentUser={currentUser}
@@ -109,7 +139,7 @@ export function ProfilePage({
             تسجيل الخروج
           </Button>
         </Card>
-      </AccountLayout>
+      </AccountPageLayout>
       <Modal
         open={passwordOpen}
         title="تغيير كلمة المرور"
@@ -202,7 +232,7 @@ export function NotificationsPage({
   activeRoute?: Route
 }) {
   return (
-    <AccountLayout
+    <AccountPageLayout
       route={activeRoute}
       go={go}
       currentUser={currentUser}
@@ -237,6 +267,6 @@ export function NotificationsPage({
           </Card>
         ))}
       </div>
-    </AccountLayout>
+    </AccountPageLayout>
   )
 }

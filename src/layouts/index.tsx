@@ -231,3 +231,5 @@ export function RoleDashboardLayout({
     </AccountLayout>
   )
 }
+
+export { CitizenLayout } from "./CitizenLayout"

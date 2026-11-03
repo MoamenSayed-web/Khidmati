@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { reportData } from "../../data/catalogs"
-import { AccountLayout } from "../../layouts"
+import { CitizenLayout } from "../../layouts"
 import { ReportCard, SectionTitle } from "../../components/shared"
 import { Button, Card, EmptyState, Icon, StatusBadge } from "../../components/ui"
 import type { AlertState, ComplaintRecord, CurrentUser, Route } from "../../types"
@@ -25,7 +25,7 @@ export function DashboardPage({
   onCancelComplaint: (id: string) => void
 }) {
   return (
-    <AccountLayout
+    <CitizenLayout
       route="dashboard"
       go={go}
       currentUser={currentUser}
@@ -176,7 +176,7 @@ export function DashboardPage({
           </div>
         </Card>
       </div>
-    </AccountLayout>
+    </CitizenLayout>
   )
 }
 
@@ -198,7 +198,7 @@ export function FavoritesPage({
     favorites.has(report.id),
   )
   return (
-    <AccountLayout
+    <CitizenLayout
       route="favorites"
       go={go}
       currentUser={currentUser}
@@ -264,6 +264,6 @@ export function FavoritesPage({
           }
         />
       )}
-    </AccountLayout>
+    </CitizenLayout>
   )
 }
