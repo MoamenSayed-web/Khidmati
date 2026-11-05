@@ -11,6 +11,7 @@ export function Button({
   loading,
   icon,
   className = "",
+  fullWidth = false,
 }: {
   children: ReactNode
   onClick?: () => void
@@ -20,13 +21,15 @@ export function Button({
   loading?: boolean
   icon?: IconName
   className?: string
+  fullWidth?: boolean
 }) {
   return (
     <button
-      className={`btn btn-${variant} ${className}`}
+      className={`btn btn-${variant} ${fullWidth ? "full" : ""} ${className}`}
       onClick={onClick}
       type={type}
       disabled={disabled || loading}
+      aria-busy={loading}
     >
       {loading ? (
         <span className="spinner" />
@@ -36,4 +39,5 @@ export function Button({
       <span>{children}</span>
     </button>
   )
+  
 }
